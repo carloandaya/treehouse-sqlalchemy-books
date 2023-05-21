@@ -4,20 +4,26 @@ import csv
 
 
 def clean_date(publish_date: str) -> datetime.date:
-    clean = datetime.strptime(publish_date, "%B %d, %Y").date()
-    return clean
+    clean_date = datetime.strptime(publish_date, "%B %d, %Y").date()
+    return clean_date
 
 
-def clean_price():
-    pass
-
+def clean_price(price_str):
+    price_float = float(price_str)
+    return int(price_float * 100)
+    
 
 def add_csv():
     with open("suggested_books.csv") as csvfile:
         data = csv.reader(csvfile)
         for row in data: 
-            book = Book(title=row[0], author=row[1], publish_date=clean_date(row[2]))
-            print(book)
+            book_in_db = session.query(Book).filter(Book.title==row[0]).one_or_none()
+            if book_in_db == None:
+                book = Book(title=row[0], author=row[1], 
+                            publish_date=clean_date(row[2]),
+                            price=clean_price(row[3]))
+                session.add(book)
+        session.commit()
 
 
 def menu():
