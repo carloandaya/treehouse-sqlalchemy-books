@@ -23,6 +23,19 @@ def clean_price(price_str):
         return int(price_float * 100)
 
 
+def clean_id(book_id, id_list):
+    try:
+        book_id = int(book_id)
+    except ValueError:
+        print("*** ID ERROR ***")
+        return
+    else:
+        if book_id in id_list:
+            return book_id
+        else:
+            return
+
+
 def add_csv():
     with open("suggested_books.csv") as csvfile:
         data = csv.reader(csvfile)
@@ -91,9 +104,26 @@ def app():
                 print("Book added!")
             case 2:
                 books = session.query(Book)
-                for book in books: 
-                    print(f'Title: {book.title}, Author: {book.author}')
-                # print("view all books")
+                for book in books:
+                    print(f"{book.id} | {book.title} | {book.author}")
+            case 3:
+                print("Search for book.")
+                # Get a list of available book ids
+                book_id_list = [book.id for book in session.query(Book).all()]
+                id_error = True
+                while id_error:
+                    print(f"ID Options: {book_id_list}")
+                    id_choice = input("Please make a selection: ")
+                    id_choice = clean_id(id_choice, book_id_list)
+                    if type(id_choice) == int:
+                        id_error = False
+                selected_book = session.query(Book).filter(Book.id == id_choice).first()
+                print(
+                    f"""
+                \n{selected_book.title} by {selected_book.author}
+                \rPublished Date: {selected_book.publish_date}
+                \rPrice: ${selected_book.price / 100}"""
+                )
             case 5:
                 print("GOODBYE")
                 app_running = False
