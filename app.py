@@ -90,7 +90,10 @@ def app():
                 session.commit()
                 print("Book added!")
             case 2:
-                print("view all books")
+                books = session.query(Book)
+                for book in books: 
+                    print(f'Title: {book.title}, Author: {book.author}')
+                # print("view all books")
             case 5:
                 print("GOODBYE")
                 app_running = False
