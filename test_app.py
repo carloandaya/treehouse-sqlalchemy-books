@@ -16,3 +16,10 @@ class AppTest(unittest.TestCase):
     def test_clean_id(self): 
         my_id = app.clean_id(3, [1, 3, 5])
         self.assertEqual(my_id, 3)
+
+    def test_choice_validator(self):
+        self.assertTrue(app.is_update_delete_choice_valid(1))
+        self.assertTrue(app.is_update_delete_choice_valid(2))
+        self.assertTrue(app.is_update_delete_choice_valid(3))
+        self.assertFalse(app.is_update_delete_choice_valid(4))
+        self.assertFalse(app.is_update_delete_choice_valid(0))

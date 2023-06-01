@@ -36,6 +36,10 @@ def clean_id(book_id, id_list):
             return
 
 
+def is_update_delete_choice_valid(choice) -> bool:
+    return choice in range(1, 4)
+
+
 def add_csv():
     with open("suggested_books.csv") as csvfile:
         data = csv.reader(csvfile)
@@ -52,6 +56,29 @@ def add_csv():
 
         session.commit()
 
+
+def edit_check(column_name, current_value):
+    print(f"\n*** EDIT {column_name} ***")
+    if column_name == "Price":
+        print(f"\rCurrent Value: {current_value / 100}")
+    elif column_name == "Date":
+        print(f'\rCurrent Value: {current_value.strftime("%B %d, %Y")}')
+    else:
+        print(f"\rCurrent Value: {current_value}")
+
+    if column_name == "Date" or column_name == "Price": 
+        while True: 
+            changes = input('What would you like to change the value to? ')
+            if column_name == "Date":
+                changes = clean_date(changes)
+                if type(changes) == datetime.date: 
+                    return changes
+            if column_name == "Price": 
+                changes = clean_price(changes)
+                if type(changes) == int:
+                    return changes
+    else: 
+        return input('What would you like to change the value to? ')
 
 def menu():
     while True:
@@ -72,6 +99,32 @@ def menu():
         else:
             print("Please make a selection from the list above.")
             input("Press Enter.")
+
+
+def sub_choice_menu():
+    while True:
+        print(
+            """
+        \n1) Edit book details
+        \r2) Delete book
+        \r3) Return to main menu    
+        """
+        )
+        choice = int(input("What would you like to do? "))
+        if is_update_delete_choice_valid(choice):
+            return choice
+        else:
+            input("Press enter to try again.")
+
+
+def display_book(selected_book):
+    print(
+        f"""
+    \n{selected_book.title} by {selected_book.author}
+    \rPublished Date: {selected_book.publish_date}
+    \rPrice: ${selected_book.price / 100}
+    """
+    )
 
 
 def app():
@@ -118,12 +171,23 @@ def app():
                     if type(id_choice) == int:
                         id_error = False
                 selected_book = session.query(Book).filter(Book.id == id_choice).first()
-                print(
-                    f"""
-                \n{selected_book.title} by {selected_book.author}
-                \rPublished Date: {selected_book.publish_date}
-                \rPrice: ${selected_book.price / 100}"""
-                )
+                display_book(selected_book)
+                # After selecting the book, allow the user to edit the details
+                sub_choice = sub_choice_menu()
+                match sub_choice:
+                    case 1:
+                        selected_book.title = edit_check('Title', selected_book.title)
+                        selected_book.author = edit_check('Author', selected_book.author)
+                        selected_book.publish_date = edit_check('Date', selected_book.publish_date)
+                        selected_book.price = edit_check('Price', selected_book.price)
+                        session.commit()
+                        print('Book updated!')
+                    case 2:
+                        session.delete(selected_book)
+                        session.commit()
+                        print('Book deleted!')
+                    case _:
+                        print("Default action.")
             case 5:
                 print("GOODBYE")
                 app_running = False
