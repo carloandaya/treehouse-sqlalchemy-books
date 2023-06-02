@@ -188,6 +188,20 @@ def app():
                         print('Book deleted!')
                     case _:
                         print("Default action.")
+            case 4: 
+                # analysis
+                oldest_book = session.query(Book).order_by(Book.publish_date).first()
+                newest_book = session.query(Book).order_by(Book.publish_date.desc()).first()
+                total_books = session.query(Book).count()
+                python_books = session.query(Book).filter(Book.title.like('%Python%')).count()
+                print(f'''
+                      \n*** BOOK ANALYSIS ***
+                      \rOldest Book: {oldest_book}
+                      \rNewest Book: {newest_book}
+                      \rTotal Books: {total_books}
+                      \rNumber of Python Books: {python_books}
+                ''')
+                
             case 5:
                 print("GOODBYE")
                 app_running = False
